@@ -5,10 +5,15 @@ import (
 	"fmt"
 	"os"
   "strings"
+  "slices"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Fprint
+
+func commandNotFound(command string) {
+  fmt.Println(command + ": not found")
+}
 
 func main() {
   for true {
@@ -26,14 +31,23 @@ func main() {
     
     command := sanitizedUserInput[0]
     args := sanitizedUserInput[1:]
+    builtInCommands := []string { "exit", "echo", "type" }
 
     switch command {
       case "exit":
           os.Exit(0)
       case "echo":
           fmt.Println(strings.Join(args, " "))
+      case "type":
+        typeCommand := args[0]
+
+        if slices.Contains(builtInCommands, typeCommand) {
+          fmt.Println(typeCommand + " is a shell builtin")
+        } else {
+          commandNotFound(typeCommand)
+        } 
       default:
-        fmt.Println(command + ": not found")
+        commandNotFound(command)
     }
   }
 }
