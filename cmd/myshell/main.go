@@ -47,7 +47,7 @@ func main() {
     
     command := sanitizedUserInput[0]
     args := sanitizedUserInput[1:]
-    builtInCommands := []string { "exit", "echo", "type", "pwd" }
+    builtInCommands := []string { "exit", "echo", "type", "pwd", "cd" }
 
     switch command {
       case "exit":
@@ -73,6 +73,12 @@ func main() {
       case "pwd":
         currentWorkingDirectory, _ := os.Getwd()
         fmt.Println(currentWorkingDirectory)
+      case "cd":
+        err := os.Chdir(args[0])
+
+        if err != nil {
+          fmt.Println("cd: " + args[0] + ": No such file or directory")
+        }
       default:
         if execPath, pathFound := findExecutablePath(command); pathFound {
           cmd := exec.Command(execPath, args...)
