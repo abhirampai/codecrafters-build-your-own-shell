@@ -22,10 +22,16 @@ func main() {
       os.Exit(1)
     }
 
-    command := strings.Split(strings.TrimSuffix(userInput, "\n"), " ")[0]
+    sanitizedUserInput := strings.Split(strings.TrimSuffix(userInput, "\n"), " ")
+    
+    command := sanitizedUserInput[0]
+    args := sanitizedUserInput[1:]
+
     switch command {
       case "exit":
           os.Exit(0)
+      case "echo":
+          fmt.Println(strings.Join(args, " "))
       default:
         fmt.Println(command + ": not found")
     }
