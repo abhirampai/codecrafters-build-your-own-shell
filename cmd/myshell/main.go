@@ -40,9 +40,26 @@ func main() {
           fmt.Println(strings.Join(args, " "))
       case "type":
         typeCommand := args[0]
+        pathEnv := os.Getenv("PATH")
 
         if slices.Contains(builtInCommands, typeCommand) {
           fmt.Println(typeCommand + " is a shell builtin")
+        } else if len(pathEnv) > 0 {
+          pathsToCheck := strings.Split(pathEnv, ":")
+          pathFound := false
+
+          for i := 0; i < len(pathsToCheck); i++ {
+            executablePath := pathsToCheck[i] + "/" + typeCommand
+            if _, err := os.Stat(executablePath); err == nil {
+              fmt.Println(typeCommand + " is " + executablePath)
+              pathFound = true
+              break
+            }
+          }
+
+          if !pathFound {
+            commandNotFound(typeCommand)
+          }
         } else {
           commandNotFound(typeCommand)
         } 
