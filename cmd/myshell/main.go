@@ -47,7 +47,7 @@ func main() {
     
     command := sanitizedUserInput[0]
     args := sanitizedUserInput[1:]
-    builtInCommands := []string { "exit", "echo", "type" }
+    builtInCommands := []string { "exit", "echo", "type", "pwd" }
 
     switch command {
       case "exit":
@@ -69,7 +69,10 @@ func main() {
           }
         } else {
           commandNotFound(typeCommand)
-        } 
+        }
+      case "pwd":
+        currentWorkingDirectory, _ := os.Getwd()
+        fmt.Println(currentWorkingDirectory)
       default:
         if execPath, pathFound := findExecutablePath(command); pathFound {
           cmd := exec.Command(execPath, args...)
