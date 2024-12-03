@@ -33,14 +33,14 @@ func findExecutablePath(command string) (executablePath string, pathFound bool) 
 }
 
 func splitString(s string) []string {
-	re := regexp.MustCompile(`'[^']*'|\S+`)
+	re := regexp.MustCompile(`'[^']*'|"[^"]*"|\S+`)
 
 	matches := re.FindAllString(s, -1)
 
 	var result []string
 
 	for _, match := range matches {
-		if match[0] == '\'' && match[len(match)-1] == '\'' {
+		if (match[0] == '\'' && match[len(match)-1] == '\'') || (match[0] == '"' && match[len(match)-1] == '"') {
 			result = append(result, match[1:len(match)-1])
 		} else {
 			result = append(result, match)
