@@ -7,7 +7,7 @@ import (
   "strings"
   "slices"
   "os/exec"
-  "regexp"
+  "unicode"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
@@ -33,24 +33,58 @@ func findExecutablePath(command string) (executablePath string, pathFound bool) 
 }
 
 func splitString(s string) []string {
-	re := regexp.MustCompile(`'[^']*'|"[^"]*"|\S+`)
+ 	var result []string
+	var current []rune
+	var quote rune
+  var nestedQuote rune
+	escaped := false
 
-	matches := re.FindAllString(s, -1)
-
-	var result []string
-
-	for _, match := range matches {
-		if (match[0] == '\'' && match[len(match)-1] == '\'') || (match[0] == '"' && match[len(match)-1] == '"') {
-			result = append(result, match[1:len(match)-1])
-		} else if match[0] == '\\' {
-      result = append(result, "")
-    } else {
-			result = append(result, strings.ReplaceAll(match, "\\", ""))
+	for i, r := range s {
+		switch {
+		case escaped:
+			current = append(current, r)
+			escaped = false
+		case r == '\\':
+      if nestedQuote != '\'' && quote != '\'' {
+        if quote == 0 || (quote != 0 && (s[i+1] == '"' || s[i+1] == '\\' || s[i+1] == '$')) {
+          escaped = true
+        } else {
+			    current = append(current, r)
+        }
+      } else {
+        current = append(current, r)
+      }
+		case quote != 0:
+			if r == quote {
+				quote = 0
+			} else {
+        if r == '"' || r == '\'' {
+          if nestedQuote == r {
+            nestedQuote = 0
+          } else {
+            nestedQuote = r
+          }
+        }
+				current = append(current, r)
+			}
+		case r == '"' || r == '\'':
+			quote = r
+		case unicode.IsSpace(r):
+			if len(current) > 0 {
+				result = append(result, string(current))
+				current = nil
+			}
+		default:
+			current = append(current, r)
 		}
 	}
 
+	if len(current) > 0 {
+		result = append(result, string(current))
+	}
+
 	return result
-}
+} 
 
 
 func main() {
