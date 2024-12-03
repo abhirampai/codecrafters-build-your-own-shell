@@ -42,8 +42,10 @@ func splitString(s string) []string {
 	for _, match := range matches {
 		if (match[0] == '\'' && match[len(match)-1] == '\'') || (match[0] == '"' && match[len(match)-1] == '"') {
 			result = append(result, match[1:len(match)-1])
-		} else {
-			result = append(result, match)
+		} else if match[0] == '\\' {
+      result = append(result, "")
+    } else {
+			result = append(result, strings.ReplaceAll(match, "\\", ""))
 		}
 	}
 
