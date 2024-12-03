@@ -7,6 +7,7 @@ import (
   "strings"
   "slices"
   "os/exec"
+  "regexp"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
@@ -31,6 +32,25 @@ func findExecutablePath(command string) (executablePath string, pathFound bool) 
   return
 }
 
+func splitString(s string) []string {
+	re := regexp.MustCompile(`'[^']*'|\S+`)
+
+	matches := re.FindAllString(s, -1)
+
+	var result []string
+
+	for _, match := range matches {
+		if match[0] == '\'' && match[len(match)-1] == '\'' {
+			result = append(result, match[1:len(match)-1])
+		} else {
+			result = append(result, match)
+		}
+	}
+
+	return result
+}
+
+
 func main() {
   for true {
     fmt.Fprint(os.Stdout, "$ ")
@@ -43,7 +63,7 @@ func main() {
       os.Exit(1)
     }
 
-    sanitizedUserInput := strings.Split(strings.TrimSuffix(userInput, "\n"), " ")
+    sanitizedUserInput := splitString(strings.TrimSuffix(userInput, "\n"))
     
     command := sanitizedUserInput[0]
     args := sanitizedUserInput[1:]
@@ -51,9 +71,10 @@ func main() {
 
     switch command {
       case "exit":
-          os.Exit(0)
+        os.Exit(0)
       case "echo":
-          fmt.Println(strings.Join(args, " "))
+        output := strings.Join(args, " ")
+        fmt.Println(output)
       case "type":
         typeCommand := args[0]
 
@@ -84,6 +105,15 @@ func main() {
         if err != nil {
           fmt.Println("cd: " + path + ": No such file or directory")
         }
+      case "cat":
+        for _, filePath := range args {
+          fileContent, err := os.ReadFile(filePath)
+          if err != nil {
+            fmt.Print("Something went wrong")
+          }
+          fmt.Print(string(fileContent))
+        }
+
       default:
         if execPath, pathFound := findExecutablePath(command); pathFound {
           cmd := exec.Command(execPath, args...)
